@@ -1,6 +1,5 @@
-* logs/
-* dags/__pycache__/
-* dags/*.pyc
-* .pyc
-* .log
-* __pycache__/
+logs/
+dags/__pycache__/
+*.pyc
+*.log
+__pycache__/
