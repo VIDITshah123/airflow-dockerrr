@@ -2,23 +2,25 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 
-# 1. Define the function the task will execute
 def print_hello():
     print("Hello World")
+    a = 1
+    b = 2
+    c = a + b
+    print(f"Sum of {a} and {b} is {c}")
+    print(f"Type of c is {type(c)}")
+    print("Dag is running successfully!")
 
-# 2. Initialize the DAG
 with DAG(
-    dag_id='hello_world_dag',
+    dag_id='first_dag',
     start_date=datetime(2024, 1, 1),
-    schedule_interval=None,  # Manual trigger only
+    schedule=None,
     catchup=False
 ) as dag:
-
-    # 3. Define the Task
+    
     hello_task = PythonOperator(
         task_id='print_hello_task',
         python_callable=print_hello
     )
-
-    # Note: Since there's only one task, no dependencies (>>) are needed.
+    
     hello_task

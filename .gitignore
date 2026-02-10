@@ -1,3 +1,6 @@
 * logs/
 * dags/__pycache__/
 * dags/*.pyc
+* .pyc
+* .log
+* __pycache__/
