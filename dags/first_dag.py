@@ -2,8 +2,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 
-date_created = 28
-is_expired = 'N'
+date_created = 33
+is_expired = 'Y'
 delete_flag = 'Y'
 zip_flag = 'N'
 deletion_attempted = 'N'
@@ -30,11 +30,15 @@ def check_expiration_flag():
 
 def delete_task():
     if is_expired == 'Y':
-        # first check deletion_attempted flag
-        if deletion_attempted == 'N':
-            print("Deleting task")
-        else:
-            print("Deletion already attempted")
+        try:    
+            # first check deletion_attempted flag
+            if deletion_attempted == 'N':
+                print("Deleting task")
+            else:
+                print("Deletion already attempted")
+        except Exception as e:
+            print(f"Error while deleting the file: {e}")
+            deletion_attempted = 'N'
 
         # if delete flag is Y and zip flag is N
         if delete_flag == 'Y' and zip_flag == 'N' and deletion_attempted == 'N':
