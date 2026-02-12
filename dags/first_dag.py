@@ -1,7 +1,8 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.hooks.base import BaseHook
+import psycopg2
 
 
 date_created = 28
@@ -14,7 +15,17 @@ deletion_attempted = 'Y'
 def fetch_not_expired_files():
     print("Task started: Fetching not expired files...")
 
-    hook = PostgresHook(postgres_conn_id='postgres_airflow')  # use your connection id
+    conn = BaseHook.get_connection('postgres_airflow')  # use your connection id
+
+    connection = psycopg2.connect(
+    host=conn.host,
+    port=conn.port,
+    dbname=conn.schema,   # must be airflow
+    user=conn.login,
+    password=conn.password
+)
+
+    cursor = connection.cursor()
 
     sql = """
             SELECT *
@@ -22,7 +33,22 @@ def fetch_not_expired_files():
             WHERE is_expired = 'F';
         """
 
-    records = hook.get_records(sql)
+    cursor.execute(sql)
+    print("Connected Database:", conn.schema)
+
+    records = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    
+    print("====================================")
+    print(f"records type:{type(records)}")
+    print("====================================")
+    print(f"records:\n{records}")
+    print("====================================")
+    print("Fetched Records:")
+    for row in records:
+        print(row)
+    print("====================================")
 
     if not records:
         print("No non-expired files found.")
@@ -34,32 +60,6 @@ def fetch_not_expired_files():
     print("Task completed successfully.")
     return "done"
 
-# def fetch_not_expired_files():
-#     try:
-#         # Connect to Postgres using Airflow connection
-#         hook = PostgresHook(postgres_conn_id='postgres_airflow')
-        
-#         sql = """
-#             SELECT *
-#             FROM file_sys.file_data
-#             WHERE is_expired = 'F';
-#         """
-        
-#         records = hook.get_records(sql)
-#         print(f"records type:{type(records)}")
-#         print("====================================")
-#         print(f"records:\n{records}")
-#         print("====================================")
-#         print("Fetched Records:")
-#         for row in records:
-#             print(row)
-#         print("====================================")
-
-#         return records
-
-#     except Exception as e:
-#         print(f"Error fetching data: {e}")
-#         return []
 
 def check_expiration_flag():
     global is_expired

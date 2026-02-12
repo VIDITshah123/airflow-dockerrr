@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir \
     apache-airflow-providers-postgres \
     openpyxl \
     pyodbc \
-    pymongo 
+    pymongo \
+    psycopg2 
     
     
 
