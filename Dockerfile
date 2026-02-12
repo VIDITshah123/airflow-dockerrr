@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir \
     apache-airflow-providers-microsoft-mssql \
     apache-airflow-providers-redis \
     apache-airflow-providers-mongo \
+    apache-airflow-providers-postgres \
     openpyxl \
     pyodbc \
     pymongo 

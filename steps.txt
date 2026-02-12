@@ -1,0 +1,31 @@
+ docker compose down -v --remove-orphans
+    removes all volumes and orphaned containers
+ docker compose up build
+    builds the docker image and starts the containers
+
+docker compose up -d
+    starts the containers in detached mode
+docker compose down
+    stops the containers
+
+
+
+airflow-dockerrr-postgres-1 ---container name
+
+
+NOW  i want to define schema & then create the table having the following fields:
+id (primary, autoincrement), path, date created, is_expired (default N), delete_flag, zip_flag, deletion_attempted (default N)
+
+
+INSERT INTO file_sys.file_data
+(file_path, date_created, is_expired, delete_flag, zip_flag, deletion_attempted)
+VALUES
+('/data/manual/file122.txt', '2026-02-10 09:15:00', 'F', 'T', 'F', 'F'),
+('/data/manual/file222.txt', '2026-02-09 14:30:25', 'T', 'F', 'T', 'T'),
+('/data/manual/file322.txt', '2026-02-08 18:45:10', 'F', 'T', 'F', 'F'),
+('/data/manual/file422.txt', '2026-02-07 07:05:55', 'F', 'F', 'T', 'F'),
+('/data/manual/file522.txt', '2026-02-06 22:10:40', 'T', 'T', 'T', 'F');
+
+
+
+

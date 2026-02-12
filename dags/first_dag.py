@@ -1,12 +1,65 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+
 
 date_created = 28
 is_expired = 'Y'
 delete_flag = 'N'
 zip_flag = 'N'
 deletion_attempted = 'Y'
+
+
+def fetch_not_expired_files():
+    print("Task started: Fetching not expired files...")
+
+    hook = PostgresHook(postgres_conn_id='postgres_airflow')  # use your connection id
+
+    sql = """
+            SELECT *
+            FROM file_sys.file_data
+            WHERE is_expired = 'F';
+        """
+
+    records = hook.get_records(sql)
+
+    if not records:
+        print("No non-expired files found.")
+    else:
+        print(f"Total files fetched: {len(records)}")
+        for row in records:
+            print(f"File ID: {row[0]}, Path: {row[1]}, Expired: {row[3]}")
+
+    print("Task completed successfully.")
+    return "done"
+
+# def fetch_not_expired_files():
+#     try:
+#         # Connect to Postgres using Airflow connection
+#         hook = PostgresHook(postgres_conn_id='postgres_airflow')
+        
+#         sql = """
+#             SELECT *
+#             FROM file_sys.file_data
+#             WHERE is_expired = 'F';
+#         """
+        
+#         records = hook.get_records(sql)
+#         print(f"records type:{type(records)}")
+#         print("====================================")
+#         print(f"records:\n{records}")
+#         print("====================================")
+#         print("Fetched Records:")
+#         for row in records:
+#             print(row)
+#         print("====================================")
+
+#         return records
+
+#     except Exception as e:
+#         print(f"Error fetching data: {e}")
+#         return []
 
 def check_expiration_flag():
     global is_expired
@@ -88,8 +141,15 @@ def delete_task():
 
 with DAG(
     dag_id='first_dag',    
+    start_date=datetime(2024, 1, 1),
     schedule=None,
+    catchup=False
 ) as dag: 
+
+    fetch_files_task = PythonOperator(
+        task_id='fetch_not_expired_files',
+        python_callable=fetch_not_expired_files
+    )
     
     expiration_check_task = PythonOperator(
         task_id='check_expiration_flag_task',
@@ -99,4 +159,4 @@ with DAG(
         task_id='delete_task',
         python_callable=delete_task
     )
-    expiration_check_task >> delete_task
+    fetch_files_task >> expiration_check_task >> delete_task
