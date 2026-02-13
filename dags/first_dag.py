@@ -6,14 +6,8 @@ import psycopg2
 import os
 import zipfile
 
-# date_created = 28
-# is_expired = 'Y'
-# delete_flag = 'N'
-# zip_flag = 'N'
-# deletion_attempted = 'Y'
-
 def zip_file(source_path):
-    DEST_PATH = "/path/to/destination/"   # hardcoded
+    DEST_PATH = "/path/to/destination/" 
     zip_name = os.path.basename(source_path) + ".zip"
     zip_path = os.path.join(DEST_PATH, zip_name)
 
@@ -147,18 +141,47 @@ def attemp_deletion():
         for record in records:
             file_id, file_path, is_expired, delete_flag, zip_flag, deletion_attempted = record
             
-            print(f"Processing file_id: {file_id}\nfile_path: {file_path}\nis_expired: {is_expired}\ndelete_flag: {delete_flag}\nzip_flag: {zip_flag}\ndeletion_attempted: {deletion_attempted}")
-            print(f"record:\n {record}")
+            # print(f"Processing file_id: {file_id}\nfile_path: {file_path}\nis_expired: {is_expired}\ndelete_flag: {delete_flag}\nzip_flag: {zip_flag}\ndeletion_attempted: {deletion_attempted}")
+            # print(f"record:\n {record}")
 
 
 
             # if delete flag is Y and zip flag is N
             if delete_flag == 'Y' and zip_flag == 'N':
+                print(f"Delete flag is Y and zip flag is N for file_id: {file_id}")
+                print(f"Deleting the file at {file_path}")
                 try:
-                    print(f"Delete flag is Y and zip flag is N for file_id: {file_id}")
-                    print(f"Deleting the file at {file_path}")
+                    os.remove(file_path)
+                    update_sql = """
+                    UPDATE file_sys.file_data
+                    SET deletion_attempted = 'T'
+                    WHERE file_id = %s;
+                    """
+                    cursor.execute(update_sql, (file_id,))
+                    connection.commit()
+                    print(f"Deletion successful for file_id: {file_id}")
+                except Exception as e:
+                    print(f"Error while deleting the file at file_id: {file_id}\nerror: {e}")
+                    update_sql = """
+                    UPDATE file_sys.file_data
+                    SET deletion_attempted = 'F'
+                    WHERE file_id = %s;
+                    """
+                    cursor.execute(update_sql, (file_id,))
+                    connection.commit()
+                    print(f"Deletion failed for file_id: {file_id}")
+
+
+
+            # if delete flag is N and zip flag is Y
+            elif delete_flag == 'N' and zip_flag == 'Y':
+
+                    print(f"Delete flag is N and zip flag is Y for file_id: {file_id}")
+                    print(f"Zipping the file at {file_path}")
                     try:
-                        os.remove(file_path)
+                        print(f"Zipping the file at {file_path}...\n")
+                        zip_file(file_path)
+
                         update_sql = """
                         UPDATE file_sys.file_data
                         SET deletion_attempted = 'T'
@@ -166,45 +189,18 @@ def attemp_deletion():
                         """
                         cursor.execute(update_sql, (file_id,))
                         connection.commit()
-                        print(f"Deletion successful, deletion_attempted: {deletion_attempted}")
+                        print(f"Zipping successful for file_id: {file_id}")
+
                     except Exception as e:
-                        print(f"Error while deleting the file: {e}")
+                        print(f"Error while zipping the file at file_id: {file_id}\nerror: {e}")
                         update_sql = """
                         UPDATE file_sys.file_data
-                        SET deletion_attempted = 'Error while deleting file'
+                        SET deletion_attempted = 'F'
                         WHERE file_id = %s;
                         """
                         cursor.execute(update_sql, (file_id,))
                         connection.commit()
-                        
-                    
-                    
-                except Exception as e:
-                    print(f"Error while deleting the file: {e}")
-                    update_sql = """
-                    UPDATE file_sys.file_data
-                    SET deletion_attempted = 'Error while deleting file'
-                    WHERE file_id = %s;
-                    """
-                    cursor.execute(update_sql, (file_id,))
-                    connection.commit()
-
-
-
-            # if delete flag is N and zip flag is Y
-            elif delete_flag == 'N' and zip_flag == 'Y':
-                try:
-                    print(f"Delete flag is N and zip flag is Y for file_id: {file_id}")
-                    print(f"Zipping the file at {file_path}")
-                except Exception as e:
-                    print(f"Error while zipping the file: {e}")
-                    update_sql = """
-                    UPDATE file_sys.file_data
-                    SET deletion_attempted = 'Error while deleting file'
-                    WHERE file_id = %s;
-                    """
-                    cursor.execute(update_sql, (file_id,))
-                    connection.commit()
+                        print(f"Zipping failed for file_id: {file_id}")
 
 
 
@@ -215,16 +211,16 @@ def attemp_deletion():
                     
                     update_sql = """
                         UPDATE file_sys.file_data
-                        SET deletion_attempted = 'Error while deleting file'
+                        SET deletion_attempted = 'F'
                         WHERE file_id = %s;
                         """
                     cursor.execute(update_sql, (file_id,))
                     connection.commit()
                 except Exception as e:
-                    print(f"Error while handling the file: {e}")
+                    print(f"Error while handling the file at file_id: {file_id} \nerror: {e}")
                     update_sql = """
                         UPDATE file_sys.file_data
-                        SET deletion_attempted = 'Error while deleting file'
+                        SET deletion_attempted = 'F'
                         WHERE file_id = %s;
                         """
                     cursor.execute(update_sql, (file_id,))
@@ -243,7 +239,7 @@ def attemp_deletion():
         
     except Exception as e:
         print(f"Error occurred: {e}")
-        # connection.rollback()
+        connection.rollback()
         raise e
         
     finally:
