@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime
+from datetime import datetime, timedelta
 from airflow.hooks.base import BaseHook
 import psycopg2
 
@@ -84,6 +84,88 @@ def check_expiration_flag():
 
 
 
+def check_and_update_expired_files():
+    """
+    Extract files with is_expired='F', check if date is more than 30 days old,
+    and update is_expired field to 'T' for expired files.
+    """
+    print("Task started: Check and update expired files...")
+    
+    conn = BaseHook.get_connection('postgres_airflow')
+    
+    connection = psycopg2.connect(
+        host=conn.host,
+        port=conn.port,
+        dbname=conn.schema,
+        user=conn.login,
+        password=conn.password
+    )
+    
+    cursor = connection.cursor()
+    
+    try:
+        # Fetch files where is_expired = 'F'
+        sql = """
+            SELECT file_id, date_created, is_expired
+            FROM file_sys.file_data
+            WHERE is_expired = 'F';
+        """
+        
+        cursor.execute(sql)
+        records = cursor.fetchall()
+        
+        print(f"Connected to database: {conn.schema}")
+        print(f"Fetched {len(records)} non-expired files")
+        
+        if not records:
+            print("No non-expired files found.")
+            return "no_files"
+        
+        # Calculate threshold date (30 days ago from current date)
+        current_date = datetime.now()
+        threshold_date = current_date - timedelta(days=30)
+        
+        expired_files = []
+        
+        for record in records:
+            file_id, date_created, is_expired = record
+            
+            print(f"Processing file_id: {file_id}, date_created: {date_created}")
+            
+            # Check if file is older than 30 days
+            if date_created < threshold_date:
+                print(f"File {file_id} is expired (older than 30 days)")
+                expired_files.append(file_id)
+                
+                # Update is_expired to 'T'
+                update_sql = """
+                    UPDATE file_sys.file_data
+                    SET is_expired = 'T'
+                    WHERE file_id = %s;
+                """
+                
+                cursor.execute(update_sql, (file_id,))
+                print(f"Updated file_id {file_id}: is_expired set to 'T'")
+            else:
+                print(f"File {file_id} is not expired (within 30 days)")
+        
+        # Commit the changes
+        connection.commit()
+        
+        print(f"Successfully updated {len(expired_files)} files as expired")
+        print(f"Expired file IDs: {expired_files}")
+        
+        return f"updated_{len(expired_files)}_files"
+        
+    except Exception as e:
+        print(f"Error in check_and_update_expired_files: {e}")
+        connection.rollback()
+        raise e
+    finally:
+        cursor.close()
+        connection.close()
+
+
 def delete_task():
     global deletion_attempted
     global is_expired
@@ -146,17 +228,25 @@ with DAG(
     catchup=False
 ) as dag: 
 
-    fetch_files_task = PythonOperator(
-        task_id='fetch_not_expired_files',
-        python_callable=fetch_not_expired_files
+    # fetch_files_task = PythonOperator(
+    #     task_id='fetch_not_expired_files',
+    #     python_callable=fetch_not_expired_files
+    # )
+    
+    check_update_expired_task = PythonOperator(
+        task_id='check_and_update_expired_files',
+        python_callable=check_and_update_expired_files
     )
     
     expiration_check_task = PythonOperator(
         task_id='check_expiration_flag_task',
         python_callable=check_expiration_flag
     )
+    
     delete_task = PythonOperator(
         task_id='delete_task',
         python_callable=delete_task
     )
-    fetch_files_task >> expiration_check_task >> delete_task
+    
+    # fetch_files_task >> check_update_expired_task >> expiration_check_task >> delete_task
+    check_update_expired_task >> expiration_check_task >> delete_task
