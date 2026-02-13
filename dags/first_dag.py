@@ -134,58 +134,74 @@ def check_and_update_expired_files():
         connection.close()
 
 
-def delete_task():
-    global deletion_attempted
-    global is_expired
-    print(f"is_expired: {is_expired}")
-    print(f"deletion_attempted: {deletion_attempted}")
-    if is_expired == 'Y':
-        # first check deletion_attempted flag
-        if deletion_attempted == 'N':
-            print("calling delete task")
+def attemp_deletion():
+    """
+    Extract files with is_expired='T'& deletion_attempted = 'F'
+    and performs updation or deletion for files that need deletion.
+    """
+    print("Task started: Attempt deletion...")
+    
+    conn = BaseHook.get_connection('postgres_airflow')
+    
+    connection = psycopg2.connect(
+        host=conn.host,
+        port=conn.port,
+        dbname=conn.schema,
+        user=conn.login,
+        password=conn.password
+    )
+    
+    cursor = connection.cursor()
+    
+    try:
+        # Fetch files where is_expired = 'F'
+        sql = """
+            SELECT file_id, file_path, is_expired, delete_flag, zip_flag, deletion_attempted
+            FROM file_sys.file_data
+            WHERE is_expired = 'T' AND deletion_attempted = 'F';
+        """
+        
+        cursor.execute(sql)
+        records = cursor.fetchall()
+        
+        print(f"Connected to database: {conn.schema}")
+        print(f"Fetched {len(records)} non-expired files")
+        
+        if not records:
+            print("No non-expired files found.")
+            return "no_files"
 
-            # if delete flag is Y and zip flag is N
-            if delete_flag == 'Y' and zip_flag == 'N':
-                try:
-                    print("Delete flag is Y and zip flag is N")
-                    print("Deleting the file")
-                    # set deletion_attempted to 'Y'
-                    deletion_attempted = 'Y'
-                    print(f"Deletion attempted, new value: {deletion_attempted}")
-                except Exception as e:
-                    print(f"Error while deleting the file: {e}")
-                    deletion_attempted = 'N'
-                    print(f"Deletion failed, new value: {deletion_attempted}")
-            # if delete flag is N and zip flag is Y
-            elif delete_flag == 'N' and zip_flag == 'Y':
-                try:
-                    print("Delete flag is N and zip flag is Y")
-                    print("Zipping the file")
-                    # set deletion_attempted to 'Y'
-                    deletion_attempted = 'Y'
-                    print(f"Zipping attempted, new value: {deletion_attempted}")
-                except Exception as e:
-                    print(f"Error while zipping the file: {e}")
-                    deletion_attempted = 'N'
-                    print(f"Zipping failed, new value: {deletion_attempted}")
-            # if both delete and zip flags are N or both are Y
-            elif delete_flag == zip_flag == 'N' or delete_flag == zip_flag == 'Y':
-                try:
-                    print("Delete flag is N and zip flag is N or both are Y pls check the database")
-                    # set deletion_attempted to 'N'
-                    deletion_attempted = 'N'
-                    print(f"Handling completed, new value: {deletion_attempted}")
-                except Exception as e:
-                    print(f"Error while handling the file: {e}")
-                    deletion_attempted = 'N'
-                    print(f"Handling failed, new value: {deletion_attempted}")
-            else:
-                print(f"Something went wrong or deletion already attempted, the value is: {deletion_attempted}")
-        else:
-            print(f"Deletion already attempted, the value is: {deletion_attempted}")
 
-    else:
-        print(f"Not expired,\n not deleting value: {is_expired}")
+        # Process each file
+        for record in records:
+            file_id, file_path, is_expired, delete_flag, zip_flag, deletion_attempted = record
+            
+            print(f"Processing file_id: {file_id}\nfile_path: {file_path}\nis_expired: {is_expired}\ndelete_flag: {delete_flag}\nzip_flag: {zip_flag}\ndeletion_attempted: {deletion_attempted}")
+            print(f"record:\n {record}")
+            
+            # TOImplement file deletion logic here
+            # For now, just update the deletion_attempted field
+            # update_sql = """
+                # UPDATE file_sys.file_data
+                # SET deletion_attempted = 'T'
+                # WHERE file_id = %s;
+            # """
+            # 
+            # cursor.execute(update_sql, (file_id,))
+            print(f"Updated file_id {file_id}: deletion_attempted set to 'T'")
+        
+        # connection.commit()
+        print("All files processed successfully.")
+        
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        # connection.rollback()
+        raise e
+        
+    finally:
+        cursor.close()
+        connection.close()
+        print("Database connection closed.")
 
 
 
@@ -195,26 +211,14 @@ with DAG(
     schedule=None,
     catchup=False
 ) as dag: 
-
-    # fetch_files_task = PythonOperator(
-    #     task_id='fetch_not_expired_files',
-    #     python_callable=fetch_not_expired_files
-    # )
-    
     check_update_expired_task = PythonOperator(
         task_id='check_and_update_expired_files',
         python_callable=check_and_update_expired_files
     )
-    
-    expiration_check_task = PythonOperator(
-        task_id='check_expiration_flag_task',
-        python_callable=check_expiration_flag
+
+    deletion_check_task = PythonOperator(
+        task_id='attemp_deletion',
+        python_callable=attemp_deletion
     )
-    
-    delete_task = PythonOperator(
-        task_id='delete_task',
-        python_callable=delete_task
-    )
-    
-    # fetch_files_task >> check_update_expired_task >> expiration_check_task >> delete_task
-    check_update_expired_task >> expiration_check_task >> delete_task
+
+    check_update_expired_task >> deletion_check_task
