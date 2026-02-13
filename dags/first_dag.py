@@ -5,83 +5,51 @@ from airflow.hooks.base import BaseHook
 import psycopg2
 
 
-date_created = 28
-is_expired = 'Y'
-delete_flag = 'N'
-zip_flag = 'N'
-deletion_attempted = 'Y'
+# date_created = 28
+# is_expired = 'Y'
+# delete_flag = 'N'
+# zip_flag = 'N'
+# deletion_attempted = 'Y'
 
 
-def fetch_not_expired_files():
-    print("Task started: Fetching not expired files...")
+# def fetch_not_expired_files():
 
-    conn = BaseHook.get_connection('postgres_airflow')  # use your connection id
-
-    connection = psycopg2.connect(
-    host=conn.host,
-    port=conn.port,
-    dbname=conn.schema,   # must be airflow
-    user=conn.login,
-    password=conn.password
-)
-
-    cursor = connection.cursor()
-
-    sql = """
-            SELECT *
-            FROM file_sys.file_data
-            WHERE is_expired = 'F';
-        """
-
-    cursor.execute(sql)
-    print("Connected Database:", conn.schema)
-
-    records = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    
-    print("====================================")
-    print(f"records type:{type(records)}")
-    print("====================================")
-    print(f"records:\n{records}")
-    print("====================================")
-    print("Fetched Records:")
-    for row in records:
-        print(row)
-    print("====================================")
-
-    if not records:
-        print("No non-expired files found.")
-    else:
-        print(f"Total files fetched: {len(records)}")
-        for row in records:
-            print(f"File ID: {row[0]}, Path: {row[1]}, Expired: {row[3]}")
-
-    print("Task completed successfully.")
-    return "done"
-
-
-def check_expiration_flag():
-    global is_expired
-    try:
-        if date_created < 30:
-            print("Date created is less than 30 days")
-            is_expired = 'N'
-            print(f"is_expired: {is_expired}")
-            print("is_expired checked successfully & its N")
-        else:
-            print("Date created is greater than 30 days")
-            is_expired = 'Y'
-            print(f"is_expired: {is_expired}")
-            print("is_expired checked successfully & its Y")
-            return is_expired
-    except Exception as e:
-        print(f"Error while checking flag for expiration: {e}")
-        is_expired = 'N'
-        print(f"is_expired: {is_expired}")
-        print("is_expired checked successfully & its N due to error")
-        return is_expired
-
+#     print("Task started: Fetching not expired files...")
+#     conn = BaseHook.get_connection('postgres_airflow')
+#     connection = psycopg2.connect(
+#     host=conn.host,
+#     port=conn.port,
+#     dbname=conn.schema,
+#     user=conn.login,
+#     password=conn.password)
+#     cursor = connection.cursor()
+#     sql = """
+#             SELECT *
+#             FROM file_sys.file_data
+#             WHERE is_expired = 'F';
+#         """
+#     cursor.execute(sql)
+#     print("Connected Database:", conn.schema)
+#     records = cursor.fetchall()
+#     cursor.close()
+#     connection.close()
+#     print("====================================")
+#     print(f"records type:{type(records)}")
+#     print("====================================")
+#     print(f"records:\n{records}")
+#     print("====================================")
+#     print("Fetched Records:")
+#     for row in records:
+#         print(row)
+#     print("====================================")
+#     if not records:
+#         print("No non-expired files found.")
+#     else:
+#         print(f"Total files fetched: {len(records)}")
+#         for row in records:
+#             print(f"File ID: {row[0]}, Path: {row[1]}, Expired: {row[3]}")
+#     print("Task completed successfully.")
+#     return "done"
 
 
 def check_and_update_expired_files():
