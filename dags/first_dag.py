@@ -119,7 +119,7 @@ def attemp_deletion():
     cursor = connection.cursor()
     
     try:
-        # Fetch files where is_expired = 'F'
+        # Fetch files where is_expired = 'T' and deletion_attempted = 'F'
         sql = """
             SELECT file_id, file_path, is_expired, delete_flag, zip_flag, deletion_attempted
             FROM file_sys.file_data
@@ -130,26 +130,43 @@ def attemp_deletion():
         records = cursor.fetchall()
         
         print(f"Connected to database: {conn.schema}")
-        print(f"Fetched {len(records)} non-expired files")
+        print(f"Fetched {len(records)} expired files for deletion")
         
         if not records:
-            print("No non-expired files found.")
+            print("No expired files found for deletion.")
             return "no_files"
-
 
         # Process each file
         for record in records:
             file_id, file_path, is_expired, delete_flag, zip_flag, deletion_attempted = record
             
-            print(f"Processing file_id: {file_id}\nfile_path: {file_path}\nis_expired: {is_expired}\ndelete_flag: {delete_flag}\nzip_flag: {zip_flag}\ndeletion_attempted: {deletion_attempted}")
-            print(f"record:\n {record}")
+            # Map host path to container path
+            container_file_path = file_path.replace('/home/viditshah/Desktop/delete', '/opt/airflow/files')
+            
+            print(f"Processing file_id: {file_id}")
+            print(f"Original path: {file_path}")
+            print(f"Container path: {container_file_path}")
+            print(f"delete_flag: {delete_flag}, zip_flag: {zip_flag}")
+
+            # Check if file exists in container
+            if not os.path.exists(container_file_path):
+                print(f"File not found in container: {container_file_path}")
+                # Update deletion_attempted to 'F' to indicate failure
+                update_sql = """
+                    UPDATE file_sys.file_data
+                    SET deletion_attempted = 'F'
+                    WHERE file_id = %s;
+                    """
+                cursor.execute(update_sql, (file_id,))
+                connection.commit()
+                continue
 
             # if delete flag is T and zip flag is F
             if delete_flag == 'T' and zip_flag == 'F':
                 print(f"Delete flag is T and zip flag is F for file_id: {file_id}")
-                print(f"Deleting the file at {file_path}")
+                print(f"Deleting the file at {container_file_path}")
                 try:
-                    os.remove(file_path)
+                    os.remove(container_file_path)
                     update_sql = """
                     UPDATE file_sys.file_data
                     SET deletion_attempted = 'T'
@@ -169,15 +186,12 @@ def attemp_deletion():
                     connection.commit()
                     print(f"Deletion failed for file_id: {file_id}")
 
-
-
             # if delete flag is F and zip flag is T
             elif delete_flag == 'F' and zip_flag == 'T':
                 print(f"Delete flag is F and zip flag is T for file_id: {file_id}")
-                print(f"Zipping the file at {file_path}")
+                print(f"Zipping the file at {container_file_path}")
                 try:
-                    print(f"Zipping the file at {file_path}...\n")
-                    zip_file(file_path)
+                    zip_file(container_file_path)
                     update_sql = """
                     UPDATE file_sys.file_data
                     SET deletion_attempted = 'T'
@@ -197,39 +211,20 @@ def attemp_deletion():
                     connection.commit()
                     print(f"Zipping failed for file_id: {file_id}")
 
-
-
             # if both delete and zip flags are F or both are T
             elif delete_flag == zip_flag == 'F' or delete_flag == zip_flag == 'T':
-                try:
-                    print(f"Delete flag is F and zip flag is F or both are T pls check the database for file_id: {file_id}")
-                    
-                    update_sql = """
-                        UPDATE file_sys.file_data
-                        SET deletion_attempted = 'F'
-                        WHERE file_id = %s;
-                        """
-                    cursor.execute(update_sql, (file_id,))
-                    connection.commit()
-                except Exception as e:
-                    print(f"Error while handling the file at file_id: {file_id} \nerror: {e}")
-                    update_sql = """
-                        UPDATE file_sys.file_data
-                        SET deletion_attempted = 'F'
-                        WHERE file_id = %s;
-                        """
-                    cursor.execute(update_sql, (file_id,))
-                    connection.commit()
+                print(f"Delete flag is F and zip flag is F or both are T for file_id: {file_id}")
+                update_sql = """
+                    UPDATE file_sys.file_data
+                    SET deletion_attempted = 'F'
+                    WHERE file_id = %s;
+                    """
+                cursor.execute(update_sql, (file_id,))
+                connection.commit()
+                print(f"Marked as handled for file_id: {file_id}")
             
-            
-            
-            # else:
-            #     print(f"Something went wrong or deletion already attempted, deletion_attempted: {deletion_attempted} \nfor file_id: {file_id}")
-            
-            
-            print(f"Updated file_id {file_id}")
+            print(f"Processed file_id {file_id}")
         
-        # connection.commit()
         print("All files processed successfully.")
         
     except Exception as e:
