@@ -28,4 +28,9 @@ VALUES
 
 
 
+plugins file:
+init 
+log 
+plug.py
+
 
