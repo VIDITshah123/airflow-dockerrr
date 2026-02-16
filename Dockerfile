@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir \
     openpyxl \
     pyodbc \
     pymongo \
-    psycopg2 
+    psycopg2-binary 
     
     
 
