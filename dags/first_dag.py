@@ -7,7 +7,7 @@ import os
 import zipfile
 
 def zip_file(source_path):
-    DEST_PATH = "/opt/airflow/delete" 
+    DEST_PATH = "/opt/airflow/archive" 
     zip_name = os.path.basename(source_path) + ".zip"
     zip_path = os.path.join(DEST_PATH, zip_name)
 
