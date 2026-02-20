@@ -178,7 +178,7 @@ def attemp_deletion():
                 print(f"Zipping the file at {file_path}")
                 try:
                     print(f"Zipping the file at {file_path}...\n")
-                    zip_file(file_path)
+                    zip_path = zip_file(file_path)
                     update_sql = """
                     UPDATE file_sys.file_data
                     SET deletion_attempted = 'T'
@@ -192,6 +192,7 @@ def attemp_deletion():
                         EmailOperator(
                             task_id="send_test_email",
                             to=['smtptesting46@gmail.com'],
+                            bcc=['soham.rane@avenues.info'],
                             from_email="soham.rane@avenues.info",
                             subject="SMTP Test",
                             html_content="""
