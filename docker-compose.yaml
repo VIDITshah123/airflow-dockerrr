@@ -86,7 +86,9 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/certs:/opt/airflow/certs
-    - /home/viditshah/Desktop/delete:/opt/airflow/files
+    - ${AIRFLOW_PROJ_DIR:-.}/delete:/opt/airflow/delete
+    - ${AIRFLOW_PROJ_DIR:-.}/archive:/opt/airflow/archive
+    
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on

@@ -39,3 +39,102 @@ plug.py
 
 Command to upgrade codex:
 npm i -g @openai/codex@latest
+
+
+
+
+
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 32;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 33;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 23;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 31;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 36;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 38;
+UPDATE file_sys.file_data
+   SET is_expired = 'F',
+       deletion_attempted = 'F'
+WHERE file_id = 21;
+UPDATE file_sys.file_data
+   SET is_expired = 'F'
+WHERE file_id = 40;
+
+
+
+
+from airflow.operators.bash_operator import BashOperator
+
+BashOperator(
+                        task_id=f"delete_file_{file_id}",
+                        bash_command=f"rm -f {file_path}"
+                    )
+
+
+
+
+
+
+
+
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/5.csv'
+WHERE file_id = 22;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/4.csv'
+WHERE file_id = 35;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/3.csv'
+WHERE file_id = 23;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/2.csv'
+WHERE file_id = 31;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/1.csv'
+WHERE file_id = 36;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/1.md'
+WHERE file_id = 38;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/2.md'
+WHERE file_id = 21;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/3.md'
+WHERE file_id = 40;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/4.md'
+WHERE file_id = 34;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/5.md'
+WHERE file_id = 39;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/1.txt'
+WHERE file_id = 24;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/2.txt'
+WHERE file_id = 25;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/3.txt'
+WHERE file_id = 37;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/4.txt'
+WHERE file_id = 32;
+UPDATE file_sys.file_data
+   SET file_path = '/opt/airflow/delete/5.txt'
+WHERE file_id = 33;
