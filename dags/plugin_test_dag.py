@@ -18,7 +18,7 @@ def plugin_test():
 
 
 with DAG(
-    dag_id="smtp_test_dag",
+    dag_id="plugin_test_dag",
     start_date=datetime(2024, 1, 1),
     schedule=None,
     catchup=False,
