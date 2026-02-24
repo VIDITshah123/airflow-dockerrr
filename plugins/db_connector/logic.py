@@ -3,7 +3,7 @@ import psycopg2
 
 class DBConnector:
     
-    def select_statement(self, selector, update_values, schema_name="file_sys", table_name="file_data", column_name="*", condition="None"):
+    def select_statement(self, selector, update_values="", schema_name="file_sys", table_name="file_data", column_name="*", condition="None"):
 
         conn = BaseHook.get_connection('postgres_airflow')
         

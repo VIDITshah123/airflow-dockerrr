@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from logicc import DBConnector
+from logic import DBConnector
 
 def plugin_test():
     db = DBConnector()
@@ -22,6 +22,7 @@ def plugin_test():
     result2 = db.select_statement(
     selector="SELECT",
     column_name="file_id, file_path, zip_flag, delete_flag",
+    update_values="",#####################################
     condition="file_id > 10"
     )
     print("Result 2:", result2)
