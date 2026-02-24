@@ -3,7 +3,7 @@ import psycopg2
 
 class DBConnector:
     
-    def select_statement(self, schema_name, table_name, column_name, condition):
+    def select_statement(self, selector, schema_name, table_name, column_name, condition):
 
         conn = BaseHook.get_connection('postgres_airflow')
         
@@ -18,7 +18,7 @@ class DBConnector:
         cursor = connection.cursor()
         try:
             sql = f""" 
-                SELECT {column_name} from {schema_name}.{table_name}
+                {selector} {column_name} from {schema_name}.{table_name}
                 WHERE {condition};
             """
             cursor.execute(sql)
