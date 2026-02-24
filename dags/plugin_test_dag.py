@@ -45,23 +45,23 @@ def plugin_test():
     print("Result 4:", result4)
     print("------------------------")
 
-# query5
-    result5 = db.select_statement(
-    selector="UPDATE",
-    update_values="is_expired = 'F' AND deletion_attempted = 'F'",
-    condition="file_id = 33"
-    )
-    print("Rows Updated:", result5)
-    print("------------------------")
+# # query5
+#     result5 = db.select_statement(
+#     selector="UPDATE",
+#     update_values="is_expired = 'F', deletion_attempted = 'F'",
+#     condition="file_id = 33"
+#     )
+#     print("Rows Updated:", result5)
+#     print("------------------------")
 
-# query6
-    result6 = db.select_statement(
-    selector="UPDATE",
-    update_values="zip_flag = 'F' AND delete_flag = 'F'",
-    condition="file_id > 36"
-    )
-    print("Rows Updated:", result6)
-    print("------------------------")
+# # query6
+#     result6 = db.select_statement(
+#     selector="UPDATE",
+#     update_values="zip_flag = 'F', delete_flag = 'F'",
+#     condition="file_id > 36"
+#     )
+#     print("Rows Updated:", result6)
+#     print("------------------------")
 
 # query7
     result7 = db.select_statement(
@@ -73,21 +73,21 @@ def plugin_test():
     print("------------------------")
 
 # query8
-    result9 = db.select_statement(
+    result8 = db.select_statement(
     selector="SELECT",
     column_name="file_id, date_created",
     condition="is_expired = 'F' AND file_id < 30"
     )
-    print("Result 9:", result9)
+    print("Result 8:", result8)
     print("------------------------")
 
 # query9
-    result10 = db.select_statement(
+    result9 = db.select_statement(
     selector="SELECT",
     column_name="COUNT(*)",
     condition=None
     )
-    print("Result 10:", result10)
+    print("Result 9:", result9)
     print("------------------------")
 
 with DAG(
