@@ -138,3 +138,18 @@ WHERE file_id = 32;
 UPDATE file_sys.file_data
    SET file_path = '/opt/airflow/delete/5.txt'
 WHERE file_id = 33;
+
+
+
+
+
+
+
+sql = f""" 
+{selector} {column_name} from {schema_name}.{table_name}
+WHERE {condition};
+"""
+
+# this will be in my plugin (logic.py) & i will pass the valuse as following:
+
+param = 
