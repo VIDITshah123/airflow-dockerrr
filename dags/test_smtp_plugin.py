@@ -28,6 +28,22 @@ def mail_test():
         send_to="smtptesting46@gmail.com"
     )
 
+    #3
+    mail.send_email(
+        subject="Test Email2", 
+        body="<h3>Connection Verified! for 2</h3>", 
+        send_to="smtptesting46@gmail.com",
+        files_path="/opt/airflow/delete/3.md"
+    )
+
+    #4
+    mail.send_email(
+        subject="Test Email2", 
+        body="<h3>Connection Verified! for 2</h3>", 
+        send_to="smtptesting46@gmail.com",
+        files_path=["/opt/airflow/delete/4.md","/opt/airflow/delete/5.md"]
+    )
+
 with DAG(
     dag_id='test_smtp_plugin',
     default_args=default_args,
