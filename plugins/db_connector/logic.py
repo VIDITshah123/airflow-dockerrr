@@ -2,21 +2,21 @@ from airflow.hooks.base import BaseHook
 import psycopg2
 
 class DBConnector:
-    
-    def select_statement(self, selector, update_values="", schema_name="file_sys", table_name="file_data", column_name="*", condition="None"):
-
+    def __init__(self):
         conn = BaseHook.get_connection('postgres_airflow')
-        
-        connection = psycopg2.connect(
+
+        self.connection = psycopg2.connect(
             host=conn.host,
             port=conn.port,
             dbname=conn.schema,
             user=conn.login,
             password=conn.password
         )
-        try:
-            cursor = connection.cursor()
+        self.cursor = self.connection.cursor()
+    
+    def select_statement(self, selector, update_values="", schema_name="file_sys", table_name="file_data", column_name="*", condition="None"):
 
+        try:
             # ---------- CASE 1: SELECT ----------
             if selector == "SELECT":
 
@@ -35,8 +35,8 @@ class DBConnector:
                         FROM {schema_name}.{table_name};
                     """
 
-                cursor.execute(sql)
-                records = cursor.fetchall()
+                self.cursor.execute(sql)
+                records = self.cursor.fetchall()
 
                 print(f"[INFO] Rows fetched: {len(records)}")
                 return records
@@ -53,10 +53,10 @@ class DBConnector:
                     WHERE {condition};
                 """
 
-                cursor.execute(sql)
-                connection.commit()
+                self.cursor.execute(sql)
+                self.connection.commit()
 
-                affected = cursor.rowcount
+                affected = self.cursor.rowcount
                 print(f"[INFO] Rows updated: {affected}")
                 return affected
 
@@ -71,10 +71,10 @@ class DBConnector:
                     WHERE {condition};
                 """
 
-                cursor.execute(sql)
-                connection.commit()
+                self.cursor.execute(sql)
+                self.connection.commit()
 
-                affected = cursor.rowcount
+                affected = self.cursor.rowcount
                 print(f"[INFO] Rows deleted: {affected}")
                 return affected
 
@@ -88,9 +88,7 @@ class DBConnector:
             print(f"[ERROR] DB operation failed: {e}")
             return None
 
-        finally:
-            if "cursor" in locals():
-                cursor.close()
-            if "connection" in locals():
-                connection.close()
+    def close(self):
+        self.cursor.close()
+        self.connection.close()
         

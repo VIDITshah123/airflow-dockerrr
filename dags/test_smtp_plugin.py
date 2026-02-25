@@ -20,29 +20,34 @@ def mail_test():
         body="<h3>Connection Verified! for 1</h3>", 
         send_to="smtptesting46@gmail.com"
     )
+    print("1st mail sent")
 
     #2nd mail
     mail.send_email(
         subject="Test Email2", 
         body="<h3>Connection Verified! for 2</h3>", 
-        send_to="smtptesting46@gmail.com"
+        send_to="smtptesting46@gmail.com",
+        files_path=["/opt/airflow/delete/1.txt"]
     )
+    print("2nd mail sent")
 
     #3
     mail.send_email(
         subject="Test Email2", 
         body="<h3>Connection Verified! for 2</h3>", 
         send_to="smtptesting46@gmail.com",
-        files_path="/opt/airflow/delete/3.md"
+        files_path=["/opt/airflow/delete/3.md"]
     )
+    print("3rd mail sent")
 
     #4
     mail.send_email(
         subject="Test Email2", 
         body="<h3>Connection Verified! for 2</h3>", 
         send_to="smtptesting46@gmail.com",
-        files_path=["/opt/airflow/delete/4.md","/opt/airflow/delete/5.md"]
+        files_path=["/opt/airflow/delete/4.md","/opt/airflow/delete/5.md","/opt/airflow/delete/2.txt"]
     )
+    print("4th mail sent")
 
 with DAG(
     dag_id='test_smtp_plugin',
