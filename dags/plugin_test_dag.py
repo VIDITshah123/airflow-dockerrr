@@ -45,23 +45,23 @@ def plugin_test():
     print("Result 4:", result4)
     print("------------------------")
 
-# # query5
-#     result5 = db.select_statement(
-#     selector="UPDATE",
-#     update_values="is_expired = 'F', deletion_attempted = 'F'",
-#     condition="file_id = 33"
-#     )
-#     print("Rows Updated:", result5)
-#     print("------------------------")
+# query5
+    result5 = db.select_statement(
+    selector="UPDATE",
+    update_values="is_expired = 'F', deletion_attempted = 'F'",
+    condition="file_id = 33"
+    )
+    print("Rows Updated:", result5)
+    print("------------------------")
 
-# # query6
-#     result6 = db.select_statement(
-#     selector="UPDATE",
-#     update_values="zip_flag = 'F', delete_flag = 'F'",
-#     condition="file_id > 36"
-#     )
-#     print("Rows Updated:", result6)
-#     print("------------------------")
+# query6
+    result6 = db.select_statement(
+    selector="UPDATE",
+    update_values="zip_flag = 'F', delete_flag = 'F'",
+    condition="file_id > 36"
+    )
+    print("Rows Updated:", result6)
+    print("------------------------")
 
 # query7
     result7 = db.select_statement(
