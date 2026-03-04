@@ -16,4 +16,5 @@ RUN pip install --no-cache-dir \
     pymongo \
     psycopg2-binary \
     psycopg2 \
-    apache-airflow-providers-smtp
+    apache-airflow-providers-smtp \
+    valkey
