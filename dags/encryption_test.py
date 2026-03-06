@@ -3,8 +3,9 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 from valkey.valkey_utils_plugin import ValkeyConnector
 from aes_cbc_plugin.cbc_logic import AESCrypto
+from aes_gcm_plugin.gcm_logic import AESGCMCrypto
 
-def encrypt_task():
+def encrypt_task_cbc():
 
     text = "hello world"
     
@@ -16,7 +17,7 @@ def encrypt_task():
     )
 
 
-def decrypt_task():
+def decrypt_task_cbc():
 
     encrypted_text = ValkeyConnector.pull("text")
     print("Received:", encrypted_text)
@@ -39,12 +40,12 @@ with DAG(
 
     task1 = PythonOperator(
         task_id="encrypt",
-        python_callable=encrypt_task
+        python_callable=encrypt_task_cbc
     )
 
     task2 = PythonOperator(
         task_id="decrypt",
-        python_callable=decrypt_task
+        python_callable=decrypt_task_cbc
     )
 
     task3 = PythonOperator(
