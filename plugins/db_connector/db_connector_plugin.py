@@ -1,8 +1,8 @@
 from airflow.plugins_manager import AirflowPlugin
+from logic import DBConnector
 
-
-class DBConnector(AirflowPlugin):
-    name = "postgres_plugin"
+class DBConnectorPlugin(AirflowPlugin):
+    name = "db_connector_plugin"
     operators = []
     hooks = []
     macros = [DBConnector]
