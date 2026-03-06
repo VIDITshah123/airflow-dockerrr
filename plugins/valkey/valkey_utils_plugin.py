@@ -6,7 +6,6 @@ class ValkeyConnector:
 
     _client = None
 
-    @staticmethod
     def get_client():
 
         if ValkeyConnector._client is None:
@@ -23,7 +22,6 @@ class ValkeyConnector:
         return ValkeyConnector._client
 
 
-    @staticmethod
     def push(key, value):
         """
         Store temporary data
@@ -33,8 +31,6 @@ class ValkeyConnector:
 
         client.set(key, value)
 
-
-    @staticmethod
     def pull(key):
         """
         Retrieve stored data
@@ -44,8 +40,6 @@ class ValkeyConnector:
 
         return client.get(key)
 
-
-    @staticmethod
     def delete(key):
         """
         Delete stored data

@@ -17,4 +17,5 @@ RUN pip install --no-cache-dir \
     psycopg2-binary \
     psycopg2 \
     apache-airflow-providers-smtp \
-    valkey
+    valkey \
+    cryptography
