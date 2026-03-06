@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from logic import DBConnector
+from db_connector.logic import DBConnector
 
 def plugin_test():
     db = DBConnector()

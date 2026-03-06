@@ -1,34 +1,21 @@
 from airflow.hooks.base import BaseHook
 import psycopg2
 
-_connection 
-
 class DBConnector:
+    def __init__(self):
+        conn = BaseHook.get_connection('postgres_airflow')
 
-
-    def get_connection():
-        global _connection
-
-        if _connection is None or _connection.closed != 0:
-            conn = BaseHook.get_connection("postgres_airflow")
-
-            _connection = psycopg2.connect(
-                host=conn.host,
-                port=conn.port,
-                dbname=conn.schema,
-                user=conn.login,
-                password=conn.password
-            )
-
-        return _connection
-        
-
+        self.connection = psycopg2.connect(
+            host=conn.host,
+            port=conn.port,
+            dbname=conn.schema,
+            user=conn.login,
+            password=conn.password
+        )
+        self.cursor = self.connection.cursor()
     
     def select_statement(self, selector, update_values="", schema_name="file_sys", table_name="file_data", column_name="*", condition="None"):
 
-        global _connection
-        _connection = self.get_connection()
-        
         try:
             # ---------- CASE 1: SELECT ----------
             if selector == "SELECT":
@@ -48,8 +35,8 @@ class DBConnector:
                         FROM {schema_name}.{table_name};
                     """
 
-                _connection.execute(sql)
-                records = _connection.fetchall()
+                self.cursor.execute(sql)
+                records = self.cursor.fetchall()
 
                 print(f"[INFO] Rows fetched: {len(records)}")
                 return records
@@ -66,10 +53,10 @@ class DBConnector:
                     WHERE {condition};
                 """
 
-                _connection.execute(sql)
-                _connection.commit()
+                self.cursor.execute(sql)
+                self.connection.commit()
 
-                affected = _connection.rowcount
+                affected = self.cursor.rowcount
                 print(f"[INFO] Rows updated: {affected}")
                 return affected
 
@@ -84,10 +71,10 @@ class DBConnector:
                     WHERE {condition};
                 """
 
-                _connection.execute(sql)
-                _connection.commit()
+                self.cursor.execute(sql)
+                self.connection.commit()
 
-                affected = _connection.rowcount
+                affected = self.cursor.rowcount
                 print(f"[INFO] Rows deleted: {affected}")
                 return affected
 
@@ -101,5 +88,7 @@ class DBConnector:
             print(f"[ERROR] DB operation failed: {e}")
             return None
 
-
-      
+    def close(self):
+        self.cursor.close()
+        self.connection.close()
+        
