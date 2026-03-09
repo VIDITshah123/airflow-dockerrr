@@ -187,27 +187,6 @@ def attemp_deletion():
                     cursor.execute(update_sql, (file_id,))
                     connection.commit()
                     print(f"Zipping successful for file_id: {file_id}")
-                    try:
-                        print("Making email operator run...")
-                        EmailOperator(
-                            task_id="send_test_email",
-                            to=['smtptesting46@gmail.com'],
-                            bcc=['soham.rane@avenues.info'],
-                            from_email="soham.rane@avenues.info",
-                            subject="SMTP Test",
-                            html_content="""
-                                <h1 style="color:blue;">Hello from Airflow vidit</h1>
-                                <p>This is a <b>HTML email</b>.</p>
-                                <p style="color:red;">SMTP test successful.</p>
-                                """,
-                            files=[zip_file(file_path)],
-                            conn_id="smtp_connection"
-                        ).execute(context={})
-
-                        print(f"email sent successfully.")
-
-                    except Exception as e:
-                        print(f"Error while sending email: {e}")
 
                 except Exception as e:
                     print(f"Error while zipping the file at file_id: {file_id}\nerror: {e}")

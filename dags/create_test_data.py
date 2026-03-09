@@ -41,7 +41,18 @@ def run_sql_script():
     print("Sql script executed successfully.")
 
 def create_files():
-    return
+
+    path = "/opt/airflow/delete/"
+    os.makedirs(path, exist_ok=True)
+
+    extensions = ["txt", "md", "csv"]
+
+    for ext in extensions:
+        for i in range(1, 6):
+            file_path = os.path.join(path, f"{i}.{ext}")
+            with open(file_path, "w") as f:
+                pass
+            print(f"Created file: {i}.{ext}")
 
 with DAG(
     dag_id='create_test_data_dag',    
